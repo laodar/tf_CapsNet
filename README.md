@@ -2,8 +2,7 @@
 
 # Network configuration
 
-According to  Hinton's paper [Dynamic Routing Between Capsules](https://arxiv.org/abs/1710.09829)
-But I didn't use the shift(<=2pix) agumentation for images.
+According to  Hinton's paper [Dynamic Routing Between Capsules](https://arxiv.org/abs/1710.09829),But I didn't use the shift(<=2pix) agumentation for images now.
 
 # Train your model
 
@@ -19,7 +18,7 @@ The test error rate is roughly 1% .
 
 Here are some images showing the results of segmenting highly overlapping digits:
 
-![](MultiMnistReconstruction11111.png)![](MultiMnistReconstruction11897.png)![](MultiMnistReconstruction13599.png)
+![image](MultiMnistReconstruction11111.png){:height="36px" width="36px"}![](MultiMnistReconstruction11897.png)![](MultiMnistReconstruction13599.png)
 
 ## image generating conditional on class
 
