@@ -97,13 +97,13 @@ correct_prediction = tf.equal(tf.argmax(y,1),tf.argmax(length_v,1))
 
 accuracy = tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
 
-train = tf.train.AdamOptimizer(learning_rate=0.0002).minimize(loss)
+train = tf.train.AdamOptimizer().minimize(loss)
 
 init = tf.initialize_all_variables()
 
-tf.summary.scalar('test_error_rate',1.0-accuracy)
+tf.summary.scalar('error_rate_on_test_set',(1.0-accuracy)*100.0)
 
-tf.summary.scalar('test_loss',loss)
+tf.summary.scalar('loss_reconstruction_on_test_set',loss_rec)
 
 merged = tf.summary.merge_all()
 
@@ -113,13 +113,13 @@ writer = tf.summary.FileWriter("./sum",sess.graph)
 
 sess.run(init)
 
-test_iter = mnist_test_iter(iters=10000,batch_size=64)
+test_iter = mnist_test_iter(iters=100000,batch_size=128)
 
 irun = 0
 
 num_show = 5
 
-for X,Y in mnist_train_iter(iters=10000,batch_size=64):
+for X,Y in mnist_train_iter(iters=100000,batch_size=128):
 
     X_TEST, Y_TEST = test_iter.next()
     X_MULTI = np.logical_or(X[:num_show],X_TEST[:num_show]).astype(np.float32)
@@ -153,8 +153,8 @@ for X,Y in mnist_train_iter(iters=10000,batch_size=64):
     cv2.imshow('SampleFromH',images_sample)
     key = cv2.waitKey(1)
     if key == ord('s'):
-        cv2.imwrite('MultiMnistReconstruction%d.png'%irun,image_show)
-        cv2.imwrite('SampleFromH%d.png'%irun, np.concatenate(images_sample, axis=1))
+        cv2.imwrite('MultiMnistReconstruction%d.png'%irun,image_show*255.0)
+        cv2.imwrite('SampleFromH%d.png'%irun, images_sample*255.0)
 
     irun += 1
 
