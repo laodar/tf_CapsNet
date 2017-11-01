@@ -18,7 +18,9 @@ The test error rate is roughly 1% .
 
 Here are some images showing the results of segmenting highly overlapping digits:
 
-![image](MultiMnistReconstruction11111.png){:height="36px" width="36px"}![](MultiMnistReconstruction11897.png)![](MultiMnistReconstruction13599.png)
+<img src="MultiMnistReconstruction11111.png" width="240">
+<img src="MultiMnistReconstruction11897.png" width="240">
+<img src="MultiMnistReconstruction13599.png" width="240">
 
 ## image generating conditional on class
 
