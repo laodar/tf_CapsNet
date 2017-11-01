@@ -40,7 +40,7 @@ def get_CapsNet(x,iterations = 3,reuse = False):
         #[batch,i_row,i_column,i_channel,u,j,v]
         #[0    ,1    ,2       ,3        ,4,5,6]
         wcap = tf.get_variable('wcap',[1,6,6,32,8,10,16],initializer=tf.truncated_normal_initializer(stddev=0.2))
-        b = tf.get_variable('coupling_coefficient',[1,6,6,32,1,10,1],initializer=tf.constant_initializer(0.0))
+        b = tf.get_variable('coupling_coefficient_logits',[1,6,6,32,1,10,1],initializer=tf.constant_initializer(0.0))
 
     c = tf.stop_gradient(tf.nn.softmax(b, dim=5))
 
@@ -59,7 +59,7 @@ def get_CapsNet(x,iterations = 3,reuse = False):
 
     for i in range(iterations):
         b += tf.reduce_sum(u_*v,axis=-1,keep_dims=True)
-        c = tf.stop_gradient(tf.nn.softmax(b, dim=5))
+        c =  tf.nn.softmax(b, dim=5)
         s = tf.reduce_sum(u_ * c, axis=[1, 2, 3], keep_dims=True)
         v = squash(s,axis=-1)
 
@@ -81,7 +81,6 @@ def get_mlp_decoder(h,num_h=[10*16,512,1024,784],reuse=False):
                 h = tf.nn.sigmoid(fullyconnect(h,w,b))
     x_rec = tf.reshape(h,[-1,28,28,1])
     return x_rec#,weights
-
 
 x = tf.placeholder(tf.float32,[None,28,28,1])
 y = tf.placeholder(tf.float32,[None,10])
@@ -106,13 +105,13 @@ correct_prediction = tf.equal(tf.argmax(y,1),tf.argmax(length_v,1))
 
 accuracy = tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
 
-train = tf.train.AdamOptimizer().minimize(loss)
+train = tf.train.AdamOptimizer(learning_rate=0.0002).minimize(loss)
 
 init = tf.initialize_all_variables()
 
-tf.summary.scalar('validation_accuracy',accuracy)
+tf.summary.scalar('test_error_rate',1.0-accuracy)
 
-tf.summary.scalar('validation_loss',loss)
+tf.summary.scalar('test_loss',loss)
 
 merged = tf.summary.merge_all()
 
@@ -122,19 +121,20 @@ writer = tf.summary.FileWriter("./sum",sess.graph)
 
 sess.run(init)
 
-test_iter = mnist_test_iter(iters=10000,batch_size=128)
+test_iter = mnist_test_iter(iters=10000,batch_size=64)
 
 irun = 0
 
-num_show = 4
+num_show = 5
 
-for X,Y in mnist_train_iter(iters=10000,batch_size=128):
+for X,Y in mnist_train_iter(iters=10000,batch_size=64):
 
     X_TEST, Y_TEST = test_iter.next()
     X_MULTI = np.logical_or(X[:num_show],X_TEST[:num_show]).astype(np.float32)
     X_MULTI = np.concatenate([X_MULTI,X_MULTI],axis=0)
     Y_MULTI = np.concatenate([Y[:num_show],Y_TEST[:num_show]],axis=0)
     H_SAM = np.random.rand(num_show*10,10,16)
+    H_SAM = H_SAM/(0.0001+np.sum(H_SAM**2.0,axis=-1,keepdims=True)**0.5)
     Y_SAM = np.eye(10)[np.array(range(10)*num_show)].astype(float)
 
     LS,LS_REC,ACC,_ = sess.run([loss,loss_rec,accuracy,train],feed_dict={x:X,y:Y})
@@ -152,10 +152,17 @@ for X,Y in mnist_train_iter(iters=10000,batch_size=128):
     images_rec1 = np.concatenate([black,black,X_REC[:num_show]], axis=-1)
     images_rec2 = np.concatenate([black, X_REC[num_show:], black], axis=-1)
     image_show = np.concatenate([images_org,images_recs,images_rec1,images_rec2],axis=2)
-    image_show = np.concatenate(image_show, axis=0)
-    cv2.imshow('MultiMnistReconstruction',image_show)
-    cv2.imshow('SampleFromH',np.concatenate(X_SAM,axis=1))
-    cv2.waitKey(1)
+    image_show = cv2.resize(np.concatenate(image_show, axis=0),dsize=(0,0),fx=3,fy=3)
+    images_sample =  X_SAM.reshape([num_show,10,28,28,1])
+    images_sample = np.concatenate(images_sample,axis=1)
+    images_sample = cv2.resize(np.concatenate(images_sample,axis=1),dsize=(0,0),fx=3,fy=3)
+
+    cv2.imshow('MultiMnistReconstruction', image_show)
+    cv2.imshow('SampleFromH',images_sample)
+    key = cv2.waitKey(1)
+    if key == ord('s'):
+        cv2.imwrite('MultiMnistReconstruction%d.png'%irun,image_show)
+        cv2.imwrite('SampleFromH%d.png'%irun, np.concatenate(images_sample, axis=1))
 
     irun += 1
 
