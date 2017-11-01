@@ -18,14 +18,6 @@ def mnist_test_iter(iters=1000,batch_size=32):
         images = batch[0].reshape([batch_size,28,28,1])
         yield images,batch[1]
 
-def get_conv_weights(shapes=[[9,9,3,256],[9,9,256,8*32],[6,6,32,8,10,16]]):
-    weights = []
-    for i in range(len(shapes)):
-        w = tf.get_variable('conv_w%i'%i,shapes[i],initializer=tf.truncated_normal_initializer(stddev=0.02))
-        b = tf.get_variable('conv_b%i'%i,shapes[i][-1],initializer=tf.truncated_normal_initializer(stddev=0.02))
-        weights.append((w,b))
-    return weights
-
 def squash(s,axis=-1):
     length_s = tf.reduce_sum(s ** 2.0, axis=axis,keep_dims=True) ** 0.5
     v = s*length_s/(1.0+length_s**2.0)
