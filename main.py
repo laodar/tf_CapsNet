@@ -18,6 +18,7 @@ init = tf.initialize_all_variables()
 sess = tf.Session()
 
 writer = tf.summary.FileWriter("./sum",sess.graph)
+saver = tf.train.Saver()
 
 sess.run(init)
 
@@ -70,5 +71,8 @@ for X,Y in train_iter:
     if key == ord('s'):
         cv2.imwrite('MultiMnistReconstruction%d.png' % irun, image_show * 255.0)
         cv2.imwrite('SampleFromH%d.png' % irun, images_sample * 255.0)
+
+    if irun+1 % 100000 == 0:
+        saver.restore(sess, tf.train.get_checkpoint_state('./cpt/').model_checkpoint_path)
 
     irun += 1
