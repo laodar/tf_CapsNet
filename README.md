@@ -2,7 +2,7 @@
 
 # Network configuration
 
-According to  Hinton's paper [Dynamic Routing Between Capsules](https://arxiv.org/abs/1710.09829), But I didn't use the shift(<=2pix) agumentation for images now.
+According to  Hinton's paper [Dynamic Routing Between Capsules](https://arxiv.org/abs/1710.09829)
 
 # Train your model
 
