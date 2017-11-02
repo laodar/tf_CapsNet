@@ -50,7 +50,3 @@ def multimnist_test_iter(iters=1000,batch_size=32,is_shift_ag=False):
         y1,y2 = batch1[1],batch2[1]
         y0 = np.logical_or(y1,y2).astype(np.float32)
         yield augmentation(images,max_offset), np.stack([y0,y1,y2], axis=-1)
-
-
-print np.min(multimnist_test_iter().next()[0]),np.max(multimnist_test_iter().next()[0])
-print np.min(multimnist_test_iter().next()[1]),np.max(multimnist_test_iter().next()[1])
