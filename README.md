@@ -38,7 +38,8 @@ batch_size = 128, lr = 0.001, beta1 = 0.9
 ![image](./images/multi/test_error_rate.png)
 
 <img src="./images/multi/MultiMnistReconstruction30915.png" width="240"><img src="./images/multi/MultiMnistReconstruction30929.png" width="240"><img src="./images/multi/MultiMnistReconstruction30940.png" width="240">
-![image](./images/multi/SampleFromH30929.png)
+
+<img src="./images/multi/SampleFromH30929.png" width="720">
 
 # Notice
 * The accuracy metric on MultiMnist may be different from the paper
