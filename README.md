@@ -26,7 +26,7 @@ Here are some images showing the results of segmenting highly overlapping digits
 
 <img src="./images/single/MultiMnistReconstruction11655.png" width="240"><img src="./images/single/MultiMnistReconstruction11676.png" width="240"><img src="./images/single/MultiMnistReconstruction11689.png" width="240">
 
-## image generating condition on class
+## image generation condition on class
 
 I reconstructed some images from random DigitCapsule vectors near the unit sphere, as we can see, it's not so real, but the pervious images show good results.and notice that Figure 4 in the paper is reconstructed from the neighbourhood of real images' embeding, I think this is due to the autoencoder regularization but not the VAE regularization.
 <img src="./images/single/SampleFromH11681.png" width="720">
