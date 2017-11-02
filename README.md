@@ -24,7 +24,7 @@ batch_size = 64, lr = 0.001, beta1 = 0.9
 
 Here are some images showing the results of segmenting highly overlapping digits:
 
-<img src="./images/MultiMnistReconstruction11665.png" width="240"><img src="./images/MultiMnistReconstruction11676.png" width="240"><img src="./images/MultiMnistReconstruction11689.png" width="240">
+<img src="./images/single/MultiMnistReconstruction11665.png" width="240"><img src="./images/single/MultiMnistReconstruction11676.png" width="240"><img src="./images/single/MultiMnistReconstruction11689.png" width="240">
 
 ## image generating condition on class
 
