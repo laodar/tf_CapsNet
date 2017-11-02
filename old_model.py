@@ -49,7 +49,7 @@ def get_CapsNet(x,iterations = 3,reuse = False):
     #u_ with shape [batch_size,6,6,32,1,10,16]
     #v  with shape [batch_size,1,1, 1,1,10,16]
 
-    for i in range(iterations):
+    for i in range(iterations-1):
         b += tf.reduce_sum(u_*v,axis=-1,keep_dims=True)
         c =  tf.nn.softmax(b, dim=5)
         s = tf.reduce_sum(u_ * c, axis=[1, 2, 3], keep_dims=True)
@@ -74,6 +74,7 @@ def get_mlp_decoder(h,num_h=[10*16,512,1024,784],reuse=False):
     x_rec = tf.reshape(h,[-1,28,28,1])
     return x_rec#,weights
 
+is_multi_mnist = 1.0
 x = tf.placeholder(tf.float32,[None,28,28,1])
 y = tf.placeholder(tf.float32,[None,10])
 h_sample = tf.placeholder(tf.float32,[None,10,16])
@@ -87,11 +88,13 @@ x_sample = get_mlp_decoder(h_sample*y_sample[:,:,None],reuse=True)
 
 length_v = tf.reduce_sum(v**2.0,axis=-1)**0.5 #length_v with shape [batch_size,10]
 
-loss_cls = tf.reduce_mean(tf.reduce_sum(y*tf.maximum(0.0,0.9-length_v)**2.0+0.5*(1.0-y)*tf.maximum(0.0,length_v-0.1)**2.0,axis=-1))
+loss_cls = tf.reduce_sum(y*tf.maximum(0.0,0.9-length_v)**2.0+0.5*(1.0-y)*tf.maximum(0.0,length_v-0.1)**2.0,axis=-1)
 
-loss_rec = tf.reduce_mean(tf.reduce_sum((x_rec-x)**2.0,axis=[1,2,3]))
+loss_rec = tf.reduce_sum((x_rec-x)**2.0,axis=[1,2,3]))
 
-loss = loss_cls + 0.0005*loss_rec
+enable_mask = is_multi_mnist*(tf.reduce_sum(y,axis=-1,keep_dims=True) - 1.0) + (1.0-is_multi_mnist)*1.0
+
+loss = tf.reduce_sum((loss_cls + 0.0005*loss_rec)*enable_mask)/tf.reduce_sum(enable_mask)
 
 correct_prediction = tf.equal(tf.argmax(y,1),tf.argmax(length_v,1))
 

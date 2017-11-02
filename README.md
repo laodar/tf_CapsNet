@@ -2,26 +2,41 @@
 
 # Network configuration
 
-According to  Hinton's paper [Dynamic Routing Between Capsules](https://arxiv.org/abs/1710.09829),But I didn't use the shift(<=2pix) agumentation for images now.
+According to  Hinton's paper [Dynamic Routing Between Capsules](https://arxiv.org/abs/1710.09829), But I didn't use the shift(<=2pix) agumentation for images now.
 
 # Train your model
 
-	python model.py
+	python main.py
 
-# Results after 10k+ training steps
+you can switch the is_multi_mnist to change the training set between Mnist and MultiMnist
+
+# Results after 10k+ training steps on Mnist
+
+batch_size = 64, lr = 0.001, beta1 = 0.9
 
 ## classification
 
-The test error rate is roughly 1% .
+![image](./images/single/test_error_rate.png)
+![image](./images/single/test_error_rate_bigger.png)
+![image](./images/single/rec_error_rate.png)
 
 ## segmenting
 
 Here are some images showing the results of segmenting highly overlapping digits:
 
-<img src="MultiMnistReconstruction11111.png" width="240"><img src="MultiMnistReconstruction11897.png" width="240"><img src="MultiMnistReconstruction13599.png" width="240">
+<img src="./images/MultiMnistReconstruction11665.png" width="240"><img src="./images/MultiMnistReconstruction11676.png" width="240"><img src="./images/MultiMnistReconstruction11689.png" width="240">
 
-## image generating conditional on class
+## image generating condition on class
 
-I reconstructed some images from random DigitCapsule vectors near the unit sphere,as we can see,it's not so real,but the pervious images show good results.and notice that Figure 4 in the paper is reconstructed from the neighbourhood of real images' embeding,I think this is due to the autoencoder regularization but not the VAE regularization.
+I reconstructed some images from random DigitCapsule vectors near the unit sphere, as we can see, it's not so real, but the pervious images show good results.and notice that Figure 4 in the paper is reconstructed from the neighbourhood of real images' embeding, I think this is due to the autoencoder regularization but not the VAE regularization.
+<img src="./images/SampleFromH11681.png" width="720">
 
-<img src="SampleFromH13599.png" width="720">
+# Results after 30k+ training steps on MultiMnist
+
+batch_size = 128, lr = 0.001, beta1 = 0.9
+
+![image](./images/multi/test_error_rate.png)
+Notice
+* the accuracy metric on MultiMnist may be different from the paper
+<img src="./images/multi/MultiMnistReconstruction30915.png" width="240"><img src="./images/multi/MultiMnistReconstruction30929.png" width="240"><img src="./images/multi/MultiMnistReconstruction30940.png" width="240">
+![image](./images/multi/SampleFromH30929.png)
