@@ -43,3 +43,4 @@ batch_size = 128, lr = 0.001, beta1 = 0.9
 # Notice
 * The accuracy metric on MultiMnist may be different from the paper
 * Better results will be got if we run more iterations
+* The error rate on test set as showed in figures is evaluated only in one random test batch, but not the whole test set.
