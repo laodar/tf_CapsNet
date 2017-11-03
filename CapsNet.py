@@ -2,53 +2,51 @@ import tensorflow as tf
 from ops import *
 
 class CapsNet(object):
-    def __init__(self,routing_iterations = 3,batch_size=128,is_multi_mnist=False):
+    def __init__(self,routing_iterations = 3,batch_size=128,is_multi_mnist=False,beta1=0.9):
         self.iterations = routing_iterations
         self.batch_size = batch_size
         self.is_multi_mnist = float(is_multi_mnist)
 
-        self.x = tf.placeholder(tf.float32, [None, 28, 28, 1])
+        self.x = tf.placeholder(tf.float32, [None, 28, 28, 3])
         self.h_sample = tf.placeholder(tf.float32, [None, 10, 16])
         self.y_sample = tf.placeholder(tf.float32, [None, 10])
         self.y = tf.placeholder(tf.float32, [None, 10, 3])
+        self.lr = tf.placeholder(tf.float32)
 
-        y0,y1,y2 = self.y[:,:,0:1],self.y[:,:,1:2],self.y[:,:,2:3]
+        x_composed, x_a, x_b = tf.split(self.x,num_or_size_splits=3,axis=3)
+        y_composed, y_a, y_b = tf.split(self.y,num_or_size_splits=3,axis=2)
 
-        enable_mask = self.is_multi_mnist * (tf.reduce_sum(y0, axis=[1,2]) - 1.0) \
-                      + (1.0 - self.is_multi_mnist) * tf.ones_like(y0[:,0,0])
+        valid_mask = self.is_multi_mnist * (tf.reduce_sum(y_composed, axis=[1,2]) - 1.0) \
+                      + (1.0 - self.is_multi_mnist) * tf.ones_like(y_composed[:,0,0])
 
-        v_digit,c = self.get_CapsNet()
+        v_digit,c = self.get_CapsNet(x_composed)
         length_v = tf.reduce_sum(v_digit ** 2.0, axis=-1) ** 0.5  # length_v with shape [batch_size,10]
 
-        if is_multi_mnist:
-            x_rec1 = self.get_mlp_decoder(v_digit * y1)
-            x_rec2 = self.get_mlp_decoder(v_digit * y2,reuse=True)
-            self.x_rec = self.get_mlp_decoder(v_digit * y0,reuse=True)
-            self.x_recs = [x_rec1,x_rec2]
-        else:
-            self.x_rec = self.get_mlp_decoder(v_digit * y0)
-            self.x_recs = [self.x_rec]
+        x_rec_a = self.get_mlp_decoder(v_digit * y_a)
+        x_rec_b = self.get_mlp_decoder(v_digit * y_b,reuse=True)
+        loss_rec_a = tf.reduce_sum((x_rec_a - x_a) ** 2.0, axis=[1, 2, 3])
+        loss_rec_b = tf.reduce_sum((x_rec_b - x_b) ** 2.0, axis=[1, 2, 3])
+        self.loss_rec = (loss_rec_a + loss_rec_b) / 2.0
+        self.x_recs = [x_rec_a,x_rec_b]
         self.x_sample = self.get_mlp_decoder(self.h_sample * self.y_sample[:, :, None], reuse=True)
-
-        self.loss_cls = tf.reduce_sum(y0[:,:,0] * tf.maximum(0.0, 0.9 - length_v) ** 2.0
-                                      + 0.5 * (1.0 - y0[:,:,0]) * tf.maximum(0.0, length_v - 0.1) ** 2.0,axis=-1)
-        self.loss_rec = tf.reduce_sum((self.x_rec-self.x)**2.0, axis=[1, 2, 3])
-        self.loss_cls = tf.reduce_sum(self.loss_cls*enable_mask)/tf.reduce_sum(enable_mask)
-        self.loss_rec = tf.reduce_sum(self.loss_rec*enable_mask)/tf.reduce_sum(enable_mask)
+        self.loss_cls = tf.reduce_sum(y_composed[:,:,0] * tf.maximum(0.0, 0.9 - length_v) ** 2.0
+                                      + 0.5 * (1.0 - y_composed[:,:,0]) * tf.maximum(0.0, length_v - 0.1) ** 2.0,axis=-1)
+        self.loss_cls = tf.reduce_sum(self.loss_cls*valid_mask)/tf.reduce_sum(valid_mask)
+        self.loss_rec = tf.reduce_sum(self.loss_rec*valid_mask)/tf.reduce_sum(valid_mask)
         self.loss = self.loss_cls + 0.0005*self.loss_rec
 
-        self.train = tf.train.AdamOptimizer().minimize(self.loss)
+        self.train = tf.train.AdamOptimizer(learning_rate=self.lr,beta1=beta1).minimize(self.loss)
 
         if is_multi_mnist:
-            self.accuracy = tf.reduce_mean(tf.cast(tf.nn.in_top_k(length_v,tf.argmax(y1[:,:,0], 1),k=2),tf.float32))+\
-                            tf.reduce_mean(tf.cast(tf.nn.in_top_k(length_v,tf.argmax(y2[:,:,0], 1),k=2),tf.float32))
+            self.accuracy = tf.reduce_mean(tf.cast(tf.nn.in_top_k(length_v,tf.argmax(tf.squeeze(y_a), 1),k=2),tf.float32))+\
+                            tf.reduce_mean(tf.cast(tf.nn.in_top_k(length_v,tf.argmax(tf.squeeze(y_b), 1),k=2),tf.float32))
             self.accuracy /= 2.0
             #this may be different from the paper
         else:
-            correct_prediction = tf.equal(tf.argmax(y0[:,:,0], 1), tf.argmax(length_v, 1))
+            correct_prediction = tf.equal(tf.argmax(y_composed[:,:,0], 1), tf.argmax(length_v, 1))
             self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-    def get_CapsNet(self,reuse = False):
+    def get_CapsNet(self,x,reuse = False):
         with tf.variable_scope('CapsNet',reuse=reuse):
             wconv1 = tf.get_variable('wconv1',[9,9,1,256],initializer=tf.truncated_normal_initializer(stddev=0.02))
             bconv1 = tf.get_variable('bconv1', [256], initializer=tf.truncated_normal_initializer(stddev=0.02))
@@ -61,7 +59,7 @@ class CapsNet(object):
 
         c = tf.stop_gradient(tf.nn.softmax(b, dim=5))
 
-        conv1 = relu(conv1x1(self.x,wconv1)+bconv1)
+        conv1 = relu(conv1x1(x,wconv1)+bconv1)
         s_primary = conv2x2(conv1,wconv2)+bconv2 #with shape [batch_size,6,6,8*32]
         s_primary = tf.reshape(s_primary,[-1,6,6,32,8,1,1])
         v_primary = self.squash(s_primary,axis=4)
