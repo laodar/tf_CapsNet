@@ -5,7 +5,8 @@ import numpy as np
 from data import *
 
 batch_size = 32
-is_multi_mnist = True
+is_multi_mnist = False
+is_shift_ag = True
 irun = 0
 num_show = 5
 lr = 0.001
@@ -18,12 +19,12 @@ key = -1
 min_lr = 5e-6
 
 if is_multi_mnist:
-    train_iter = multimnist_train_iter(iters=steps,batch_size=batch_size)
-    test_iter = multimnist_test_iter(iters=steps, batch_size=batch_size)
+    train_iter = multimnist_train_iter(iters=steps,batch_size=batch_size,is_shift_ag = True)
+    test_iter = multimnist_test_iter(iters=steps, batch_size=batch_size,is_shift_ag = True)
 else:
-    train_iter = mnist_train_iter(iters=steps,batch_size=batch_size)
-    test_iter = mnist_test_iter(iters=steps, batch_size=batch_size)
-multi_iter = multimnist_test_iter(iters=steps,batch_size=num_show)
+    train_iter = mnist_train_iter(iters=steps,batch_size=batch_size,is_shift_ag = True)
+    test_iter = mnist_test_iter(iters=steps, batch_size=batch_size,is_shift_ag = True)
+multi_iter = multimnist_test_iter(iters=steps,batch_size=num_show,is_shift_ag = True)
 
 net = CapsNet(is_multi_mnist=is_multi_mnist)
 tf.summary.scalar('error_rate_on_test_set', (1.0 - net.accuracy) * 100.0)
@@ -56,7 +57,6 @@ for X,Y in train_iter:
         images_sample = np.concatenate(images_sample, axis=1)
         images_sample = cv2.resize(np.concatenate(images_sample, axis=1), dsize=(0, 0), fx=3, fy=3)
         cv2.imshow('SampleFromH', images_sample)
-        key = cv2.waitKey(1)
 
     if is_show_multi_rec:
         X_MULTI,Y_MULTI = multi_iter.next()
@@ -70,6 +70,8 @@ for X,Y in train_iter:
         image_show = np.concatenate([images_org, images_recs, images_rec1, images_rec2], axis=2)
         image_show = cv2.resize(np.concatenate(image_show, axis=0), dsize=(0, 0), fx=3, fy=3)
         cv2.imshow('MultiMnistReconstruction', image_show)
+
+    if is_show_multi_rec or is_multi_mnist:
         key = cv2.waitKey(1)
 
     if key == ord('s'):

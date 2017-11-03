@@ -27,7 +27,7 @@ def mnist_test_iter(iters=1000,batch_size=32,is_shift_ag=False):
         images = np.concatenate([images] * 3, axis=-1)
         yield augmentation(images,max_offset), np.stack([batch[1]]*3, axis=-1)
 
-def multimnist_train_iter(iters=1000,batch_size=32,is_shift_ag=False):
+def multimnist_train_iter(iters=1000,batch_size=32,is_shift_ag=True):
     mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
     max_offset = int(is_shift_ag) * 2
     for i in range(iters):
@@ -41,7 +41,7 @@ def multimnist_train_iter(iters=1000,batch_size=32,is_shift_ag=False):
         y0 = np.logical_or(y1,y2).astype(np.float32)
         yield images, np.stack([y0,y1,y2], axis=-1)
 
-def multimnist_test_iter(iters=1000,batch_size=32,is_shift_ag=False):
+def multimnist_test_iter(iters=1000,batch_size=32,is_shift_ag=True):
     mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
     max_offset = int(is_shift_ag) * 2
     for i in range(iters):
