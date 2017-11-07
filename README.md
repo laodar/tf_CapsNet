@@ -1,4 +1,4 @@
-# A simple tensorflow implementation for CapsNet
+# A tensorflow implementation for CapsNet
 
 # Network configuration
 
