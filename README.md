@@ -14,7 +14,7 @@ you can switch the is_multi_mnist to change the training set between Mnist and M
 
 batch_size = 64, lr = 0.001, beta1 = 0.9, decay_freq = 2k steps, min_lr = 1e-6, after 10k+ steps
 
-is_shift_agumentation = True
+is_shift_augmentation = True
 
 ![image](./images/single/test_error_rate_bigger.png)
 ![image](./images/single/rec_error_rate.png)
